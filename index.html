@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>She Creates Academy — Funnel Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{
+  --bg:#0d0810;--card:#18101a;--card2:#1f1424;--border:rgba(255,180,200,0.1);
+  --text:#f5eef8;--muted:#8a7090;
+  --rose:#e8729a;--lavender:#c084b8;--blush:#f4b8cc;--mauve:#9b72cf;
+  --coral:#f4836a;--mint:#7ecfb0;--gold:#f0c070;--red:#f06080;
+  --r:14px;--ri:8px
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 40% at 30% 0%,rgba(232,114,154,0.07),transparent),radial-gradient(ellipse 50% 30% at 80% 100%,rgba(192,132,184,0.05),transparent);pointer-events:none;z-index:0}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--card2);border-radius:4px}
+.header{background:rgba(13,8,16,0.95);border-bottom:.5px solid var(--border);padding:0 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:100;backdrop-filter:blur(16px);min-height:72px}
+.logo-wrap{display:flex;align-items:center;gap:14px}
+.logo-mark{width:44px;height:44px;background:linear-gradient(135deg,var(--rose),var(--lavender));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 24px rgba(232,114,154,0.3);font-weight:800}
+.logo-text h1{font-size:19px;font-weight:800;letter-spacing:-0.5px}
+.logo-text h1 span{background:linear-gradient(135deg,var(--rose),var(--lavender));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo-text p{font-size:10px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-top:2px}
+.refresh-note{font-size:11px;color:var(--muted)}
+.refresh-note b{color:var(--blush)}
+.nav{display:flex;gap:4px;padding:12px 32px 0;border-bottom:.5px solid var(--border);background:rgba(13,8,16,0.6);position:relative;z-index:5;flex-wrap:wrap}
+.nav button{background:none;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:10px 18px;cursor:pointer;border-radius:var(--ri) var(--ri) 0 0;border-bottom:2px solid transparent}
+.nav button.active{color:var(--text);border-bottom-color:var(--rose);background:var(--card)}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 32px 60px;position:relative;z-index:1}
+.page{display:none}.page.active{display:block}
+.alerts{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.alert{padding:11px 16px;border-radius:var(--ri);font-size:13px;font-weight:600;border:.5px solid}
+.alert.bad{background:rgba(240,96,128,0.1);border-color:rgba(240,96,128,0.35);color:#ffb3c4}
+.alert.ok{background:rgba(126,207,176,0.08);border-color:rgba(126,207,176,0.25);color:var(--mint)}
+.alert.warn{background:rgba(240,192,112,0.08);border-color:rgba(240,192,112,0.3);color:var(--gold)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
+.kpi{background:var(--card);border:.5px solid var(--border);border-radius:var(--r);padding:16px 18px}
+.kpi .lbl{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);font-weight:700}
+.kpi .val{font-size:26px;font-weight:800;margin:6px 0 2px;letter-spacing:-0.5px}
+.kpi .sub{font-size:11px;color:var(--muted)}
+.kpi .sub.good{color:var(--mint)}.kpi .sub.bad{color:var(--red)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--card);border:.5px solid var(--border);border-radius:var(--r);padding:20px}
+.card h3{font-size:13px;font-weight:700;margin-bottom:4px}
+.card .hint{font-size:11px;color:var(--muted);margin-bottom:14px}
+.chart-box{position:relative;height:260px}
+.chart-box.tall{height:320px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:.5px solid var(--border);white-space:nowrap}
+td{padding:9px 10px;border-bottom:.5px solid var(--border);white-space:nowrap}
+tr:hover td{background:rgba(232,114,154,0.04)}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+th.num{text-align:right}
+.pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700}
+.pill.mint{background:rgba(126,207,176,0.15);color:var(--mint)}
+.pill.coral{background:rgba(244,131,106,0.15);color:var(--coral)}
+.pill.red{background:rgba(240,96,128,0.15);color:#ffb3c4}
+.pill.dim{background:rgba(138,112,144,0.15);color:var(--muted)}
+.note-icon{cursor:help;color:var(--muted);font-size:11px}
+.legend{font-size:11px;color:var(--muted);margin-top:10px}
+.footer{margin-top:36px;font-size:11px;color:var(--muted);text-align:center;line-height:1.8}
+.footer a{color:var(--lavender);text-decoration:none}
+.loading{text-align:center;padding:80px 0;color:var(--muted);font-size:13px}
+.err{background:rgba(240,96,128,0.1);border:.5px solid rgba(240,96,128,0.35);border-radius:var(--r);padding:20px;color:#ffb3c4;font-size:13px;margin-bottom:20px}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo-wrap">
+    <div class="logo-mark">SC</div>
+    <div class="logo-text">
+      <h1>She Creates <span>Funnel</span></h1>
+      <p>Webinar → Application → Call → Close</p>
+    </div>
+  </div>
+  <div class="refresh-note">Live from the Funnel Scoreboard sheet · <b id="last-cohort-label">loading…</b></div>
+</div>
+
+<div class="nav">
+  <button class="active" data-page="overview">Overview</button>
+  <button data-page="cohorts">Weekly Cohorts</button>
+  <button data-page="daily">Daily Trend</button>
+  <button data-page="email">Email Stats</button>
+</div>
+
+<div class="wrap">
+  <div id="load" class="loading">Loading live data…</div>
+  <div id="fail" style="display:none" class="err"></div>
+
+  <div class="page active" id="page-overview" style="display:none">
+    <div class="alerts" id="alerts"></div>
+    <div class="kpis" id="kpis"></div>
+    <div class="grid2">
+      <div class="card">
+        <h3>This Week's Funnel</h3>
+        <div class="hint" id="funnel-hint"></div>
+        <div class="chart-box"><canvas id="ch-funnel"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Show Rate by Week</h3>
+        <div class="hint">Goal 33%+ · mint = at/above goal</div>
+        <div class="chart-box"><canvas id="ch-show"></canvas></div>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <h3>Volume by Week</h3>
+        <div class="hint">Registered vs applications vs calls booked</div>
+        <div class="chart-box"><canvas id="ch-volume"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Cash Collected &amp; RPR</h3>
+        <div class="hint">RPR = cash per registrant · goal ~$83 ($30k @ 360 reg)</div>
+        <div class="chart-box"><canvas id="ch-cash"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-cohorts">
+    <div class="card">
+      <h3>Weekly Cohorts — full table</h3>
+      <div class="hint">One row per webinar. Show %: mint ≥33% · coral 30-33% · red &lt;30%. Hover the ⓘ for source notes.</div>
+      <div style="overflow-x:auto"><table id="tbl-cohorts"></table></div>
+      <div class="legend">Cash is entered manually from Whop each Friday. RPR goal ~$83. Blank cells = not tracked that week.</div>
+    </div>
+  </div>
+
+  <div class="page" id="page-daily">
+    <div class="grid2">
+      <div class="card">
+        <h3>Current Cohort Size by Day</h3>
+        <div class="hint">Signups accumulate Mon→Thu, reset after each webinar</div>
+        <div class="chart-box"><canvas id="ch-cohortsize"></canvas></div>
+      </div>
+      <div class="card">
+        <h3>Applications &amp; Bookings per Day</h3>
+        <div class="hint">Daily deltas</div>
+        <div class="chart-box"><canvas id="ch-deltas"></canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Sales Calls Pipeline — latest snapshot</h3>
+      <div class="hint" id="pipe-hint"></div>
+      <div class="chart-box"><canvas id="ch-pipeline"></canvas></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h3>Last 14 Days</h3>
+      <div class="hint"></div>
+      <div style="overflow-x:auto"><table id="tbl-daily"></table></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-email">
+    <div class="card">
+      <h3>Open &amp; Click Rates by Send</h3>
+      <div class="hint">Entered manually from the GHL UI (opens/clicks are not API-readable)</div>
+      <div class="chart-box"><canvas id="ch-email"></canvas></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h3>Send Log</h3>
+      <div class="hint"></div>
+      <div style="overflow-x:auto"><table id="tbl-email"></table></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Data: <a href="https://docs.google.com/spreadsheets/d/1_UWmgZb_Cr3ST2WKizkaIh8zQrvFSjvevIaESeiMKKI/edit" target="_blank">SCA Funnel Scoreboard sheet</a> — auto-fed from GoHighLevel Thu 2pm / Thu 8pm / Mon 10am / daily 8am PT.<br>
+    Refresh the page to pull the latest numbers. Built by Focal Point.
+  </div>
+</div>
+
+<script>
+const SID = "1_UWmgZb_Cr3ST2WKizkaIh8zQrvFSjvevIaESeiMKKI";
+const C = {rose:"#e8729a",lavender:"#c084b8",blush:"#f4b8cc",mauve:"#9b72cf",coral:"#f4836a",mint:"#7ecfb0",gold:"#f0c070",red:"#f06080",muted:"#8a7090",grid:"rgba(255,180,200,0.07)"};
+
+Chart.defaults.font.family = "'DM Sans',sans-serif";
+Chart.defaults.color = C.muted;
+Chart.defaults.borderColor = C.grid;
+
+// ---- gviz fetch + parse ----
+async function gviz(sheet){
+  const url = `https://docs.google.com/spreadsheets/d/${SID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheet)}`;
+  const r = await fetch(url);
+  const t = await r.text();
+  const json = JSON.parse(t.substring(t.indexOf("(")+1, t.lastIndexOf(")")));
+  if(json.status !== "ok") throw new Error("Sheet query failed for "+sheet);
+  return json.table;
+}
+function cell(row,i){ return (row.c && row.c[i]) ? row.c[i] : null; }
+function val(row,i){ const c = cell(row,i); return c ? c.v : null; }
+function fmt(row,i){ const c = cell(row,i); return c ? (c.f !== undefined ? c.f : (c.v === null ? "" : String(c.v))) : ""; }
+function asDate(v,f){
+  if(v === null || v === undefined) return null;
+  if(typeof v === "string"){
+    const m = v.match(/Date\((\d+),(\d+),(\d+)/);
+    if(m) return new Date(+m[1], +m[2], +m[3]);
+    const d = new Date(v); return isNaN(d) ? (f||v) : d;
+  }
+  return v;
+}
+function dLabel(d){ return (d instanceof Date) ? d.toLocaleDateString("en-US",{month:"short",day:"numeric"}) : String(d); }
+const money = n => (n===null||n===""||n===undefined) ? "" : "$"+Number(n).toLocaleString("en-US",{maximumFractionDigits:0});
+const pctS = n => (n===null||n===""||n===undefined) ? "" : (Number(n)*100).toFixed(1).replace(/\.0$/,"")+"%";
+
+// ---- data models ----
+function parseCohorts(table){
+  const out = [];
+  for(const row of table.rows){
+    const d = asDate(val(row,0), fmt(row,0));
+    if(!(d instanceof Date)) continue; // skip the note row / blanks
+    out.push({
+      date:d, reg:val(row,1), att:val(row,2), show:val(row,3), noshow:val(row,4),
+      replay:val(row,5), reached:val(row,6), apps:val(row,7), appRate:val(row,8),
+      booked:val(row,9), showed:val(row,10), won:val(row,11), lost:val(row,12),
+      close:val(row,13), cash:val(row,14), rpr:val(row,15), mix:val(row,16), notes:val(row,17)
+    });
+  }
+  out.sort((a,b)=>a.date-b.date);
+  return out;
+}
+function parseDaily(table){
+  const out = [];
+  for(const row of table.rows){
+    const d = asDate(val(row,0), fmt(row,0));
+    if(!(d instanceof Date)) continue;
+    out.push({date:d, size:val(row,1), apps:val(row,2), appsD:val(row,3), booked:val(row,4), bookedD:val(row,5),
+      stages:[val(row,6),val(row,7),val(row,8),val(row,9),val(row,10),val(row,11),val(row,12)]});
+  }
+  out.sort((a,b)=>a.date-b.date);
+  return out;
+}
+function parseEmail(table){
+  const out = [];
+  for(const row of table.rows){
+    const d = asDate(val(row,0), fmt(row,0));
+    if(!(d instanceof Date) && !val(row,1)) continue;
+    if(!val(row,1)) continue;
+    out.push({date:d, name:val(row,1), sent:val(row,2), deliv:val(row,3), openR:val(row,5), clickR:val(row,7)});
+  }
+  return out;
+}
+
+// ---- render helpers ----
+function kpi(lbl,val,sub,subClass){
+  return `<div class="kpi"><div class="lbl">${lbl}</div><div class="val">${val}</div><div class="sub ${subClass||""}">${sub||""}</div></div>`;
+}
+function showPill(v){
+  if(v===null||v===""||v===undefined) return `<span class="pill dim">—</span>`;
+  const p = Number(v);
+  const cls = p>=0.33 ? "mint" : (p>=0.30 ? "coral" : "red");
+  return `<span class="pill ${cls}">${pctS(p)}</span>`;
+}
+
+function render(cohorts, daily, email){
+  const last = cohorts.length ? cohorts[cohorts.length-1] : null;
+  const prev = cohorts.length>1 ? cohorts[cohorts.length-2] : null;
+  const lastD = daily.length ? daily[daily.length-1] : null;
+
+  document.getElementById("last-cohort-label").textContent = last ? "latest webinar "+dLabel(last.date) : "no cohort data yet";
+
+  // Alerts
+  const alerts = [];
+  if(lastD){
+    const bookedPipe = (lastD.stages[1]||0)+(lastD.stages[2]||0);
+    if((lastD.stages[3]||0)===0 && (lastD.stages[4]||0)===0 && bookedPipe>0)
+      alerts.push(["bad","Calls are booked but Showed and No-Show both read 0 - closers are not moving pipeline cards."]);
+    else
+      alerts.push(["ok","Call outcomes are being logged in the pipeline."]);
+  }
+  if(last){
+    if(Number(last.reg)<300) alerts.push(["warn",`Registrations at ${last.reg} - below the 300 floor (target 360+).`]);
+    if(last.cash===null||last.cash==="") alerts.push(["warn","Cash not entered for the latest cohort yet - pull it from Whop (Cohorts tab, column O)."]);
+  }
+  document.getElementById("alerts").innerHTML = alerts.map(a=>`<div class="alert ${a[0]}">${a[1]}</div>`).join("");
+
+  // KPIs
+  const delta = (cur,pr,fmtFn) => (pr===null||pr===undefined||cur===null||pr===""||cur==="") ? "" :
+    ((cur-pr>=0?"▲ +":"▼ ")+(fmtFn?fmtFn(Math.abs(cur-pr)):Math.abs(cur-pr))+" vs prior week");
+  const dCls = (cur,pr)=> (pr===null||pr===undefined||cur===null||pr===""||cur==="")?"":(cur>=pr?"good":"bad");
+  let k = "";
+  if(last){
+    k += kpi("Registered", last.reg??"—", prev?delta(last.reg,prev.reg):"target 360+", prev?dCls(last.reg,prev.reg):"");
+    k += kpi("Show Rate", pctS(last.show)||"—", "goal 33%+", (last.show>=0.33)?"good":(last.show?"bad":""));
+    k += kpi("Applications", last.apps??"—", prev?delta(last.apps,prev.apps):"", prev?dCls(last.apps,prev.apps):"");
+    k += kpi("Calls Booked", last.booked??"—", prev?delta(last.booked,prev.booked):"", prev?dCls(last.booked,prev.booked):"");
+    k += kpi("Won", (last.won===null||last.won==="")?"—":last.won, "from pipeline cards","");
+    k += kpi("Cash", last.cash?money(last.cash):"—", "target $30k/wk", (Number(last.cash)>=30000)?"good":"");
+    k += kpi("RPR", (last.rpr!==null&&last.rpr!=="")?("$"+Number(last.rpr).toFixed(0)):"—", "goal ~$83", (Number(last.rpr)>=83)?"good":"");
+  } else {
+    k = kpi("No cohort data yet","—","First auto row lands Thursday","");
+  }
+  document.getElementById("kpis").innerHTML = k;
+
+  // Funnel chart (latest cohort)
+  if(last){
+    document.getElementById("funnel-hint").textContent = "Webinar "+dLabel(last.date)+" - each bar as share of registered";
+    const reached = (Number(last.att)||0)+(Number(last.replay)||0);
+    new Chart(document.getElementById("ch-funnel"),{
+      type:"bar",
+      data:{labels:["Registered","Reached (live+replay)","Applied","Booked","Showed","Won"],
+        datasets:[{data:[last.reg,reached,last.apps,last.booked,last.showed,last.won].map(x=>Number(x)||0),
+          backgroundColor:[C.rose,C.blush,C.gold,C.coral,C.lavender,C.mint],borderRadius:6}]},
+      options:{indexAxis:"y",plugins:{legend:{display:false}},scales:{x:{grid:{color:C.grid}},y:{grid:{display:false}}},maintainAspectRatio:false}
+    });
+  }
+
+  const labels = cohorts.map(c=>dLabel(c.date));
+
+  // Show rate
+  new Chart(document.getElementById("ch-show"),{
+    type:"bar",
+    data:{labels,datasets:[{data:cohorts.map(c=>c.show!==null&&c.show!==""?Number(c.show)*100:null),
+      backgroundColor:cohorts.map(c=>Number(c.show)>=0.33?C.mint:(Number(c.show)>=0.30?C.coral:C.red)),borderRadius:6,maxBarThickness:48}]},
+    options:{plugins:{legend:{display:false}},scales:{y:{grid:{color:C.grid},ticks:{callback:v=>v+"%"},suggestedMax:45},x:{grid:{display:false}}},maintainAspectRatio:false}
+  });
+
+  // Volume
+  new Chart(document.getElementById("ch-volume"),{
+    type:"bar",
+    data:{labels,datasets:[
+      {label:"Registered",data:cohorts.map(c=>c.reg),backgroundColor:C.rose,borderRadius:5,maxBarThickness:34},
+      {label:"Applied",data:cohorts.map(c=>c.apps),backgroundColor:C.gold,borderRadius:5,maxBarThickness:34},
+      {label:"Booked",data:cohorts.map(c=>c.booked),backgroundColor:C.lavender,borderRadius:5,maxBarThickness:34}]},
+    options:{plugins:{legend:{position:"bottom",labels:{boxWidth:10,boxHeight:10}}},scales:{y:{grid:{color:C.grid}},x:{grid:{display:false}}},maintainAspectRatio:false}
+  });
+
+  // Cash + RPR
+  new Chart(document.getElementById("ch-cash"),{
+    data:{labels,datasets:[
+      {type:"bar",label:"Cash",data:cohorts.map(c=>c.cash),backgroundColor:C.mint,borderRadius:6,maxBarThickness:44,yAxisID:"y"},
+      {type:"line",label:"RPR",data:cohorts.map(c=>c.rpr),borderColor:C.gold,backgroundColor:C.gold,tension:0.3,yAxisID:"y1",pointRadius:4}]},
+    options:{plugins:{legend:{position:"bottom",labels:{boxWidth:10,boxHeight:10}}},
+      scales:{y:{grid:{color:C.grid},ticks:{callback:v=>"$"+(v/1000)+"k"}},y1:{position:"right",grid:{display:false},ticks:{callback:v=>"$"+v}},x:{grid:{display:false}}},maintainAspectRatio:false}
+  });
+
+  // Cohorts table
+  let th = "<tr><th>Webinar</th><th class='num'>Registered</th><th class='num'>Attended</th><th>Show %</th><th class='num'>No-Show</th><th class='num'>Replay</th><th class='num'>Apps</th><th>App Rate</th><th class='num'>Booked</th><th class='num'>Showed</th><th class='num'>Won</th><th class='num'>Lost</th><th class='num'>Cash</th><th class='num'>RPR</th><th>Sources</th><th></th></tr>";
+  let rows = cohorts.slice().reverse().map(c=>{
+    const noteIcon = c.notes ? `<span class="note-icon" title="${String(c.notes).replace(/"/g,"&quot;")}">ⓘ</span>` : "";
+    return `<tr><td>${dLabel(c.date)}</td><td class="num">${c.reg??""}</td><td class="num">${c.att??""}</td><td>${showPill(c.show)}</td><td class="num">${c.noshow??""}</td><td class="num">${c.replay??""}</td><td class="num">${c.apps??""}</td><td>${c.appRate!==null&&c.appRate!==""?pctS(c.appRate):""}</td><td class="num">${c.booked??""}</td><td class="num">${c.showed??""}</td><td class="num">${c.won??""}</td><td class="num">${c.lost??""}</td><td class="num">${c.cash?money(c.cash):""}</td><td class="num">${c.rpr!==null&&c.rpr!==""?"$"+Number(c.rpr).toFixed(0):""}</td><td style="font-size:11px;color:var(--muted)">${c.mix??""}</td><td>${noteIcon}</td></tr>`;
+  }).join("");
+  document.getElementById("tbl-cohorts").innerHTML = th + rows;
+
+  // Daily charts
+  const dl = daily.map(d=>dLabel(d.date));
+  new Chart(document.getElementById("ch-cohortsize"),{
+    type:"line",
+    data:{labels:dl,datasets:[{label:"Cohort size",data:daily.map(d=>d.size),borderColor:C.rose,backgroundColor:"rgba(232,114,154,0.12)",fill:true,tension:0.3,pointRadius:3}]},
+    options:{plugins:{legend:{display:false}},scales:{y:{grid:{color:C.grid}},x:{grid:{display:false}}},maintainAspectRatio:false}
+  });
+  new Chart(document.getElementById("ch-deltas"),{
+    type:"bar",
+    data:{labels:dl,datasets:[
+      {label:"New apps",data:daily.map(d=>d.appsD),backgroundColor:C.gold,borderRadius:5,maxBarThickness:26},
+      {label:"New bookings",data:daily.map(d=>d.bookedD),backgroundColor:C.lavender,borderRadius:5,maxBarThickness:26}]},
+    options:{plugins:{legend:{position:"bottom",labels:{boxWidth:10,boxHeight:10}}},scales:{y:{grid:{color:C.grid}},x:{grid:{display:false}}},maintainAspectRatio:false}
+  });
+  if(lastD){
+    document.getElementById("pipe-hint").textContent = "As of "+dLabel(lastD.date)+" - all-time card counts per stage";
+    new Chart(document.getElementById("ch-pipeline"),{
+      type:"bar",
+      data:{labels:["App Received","New Booking","Confirmed","Showed","No-Show","Won","Lost"],
+        datasets:[{data:lastD.stages,backgroundColor:[C.gold,C.lavender,C.blush,C.mint,C.coral,C.rose,C.muted],borderRadius:6,maxBarThickness:60}]},
+      options:{plugins:{legend:{display:false}},scales:{y:{grid:{color:C.grid}},x:{grid:{display:false}}},maintainAspectRatio:false}
+    });
+  }
+  // Daily table (last 14)
+  let dth = "<tr><th>Date</th><th class='num'>Cohort Size</th><th class='num'>Apps Δ</th><th class='num'>Booked Δ</th><th class='num'>Confirmed</th><th class='num'>Showed</th><th class='num'>Won</th><th class='num'>Lost</th></tr>";
+  let drows = daily.slice(-14).reverse().map(d=>
+    `<tr><td>${dLabel(d.date)}</td><td class="num">${d.size??""}</td><td class="num">${d.appsD??""}</td><td class="num">${d.bookedD??""}</td><td class="num">${d.stages[2]??""}</td><td class="num">${d.stages[3]??""}</td><td class="num">${d.stages[5]??""}</td><td class="num">${d.stages[6]??""}</td></tr>`).join("");
+  document.getElementById("tbl-daily").innerHTML = dth + drows;
+
+  // Email
+  const el = email.map(e=>dLabel(e.date)+" · "+String(e.name).substring(0,24));
+  new Chart(document.getElementById("ch-email"),{
+    type:"bar",
+    data:{labels:el,datasets:[
+      {label:"Open rate",data:email.map(e=>e.openR!==null?Number(e.openR)*100:null),backgroundColor:C.rose,borderRadius:5,maxBarThickness:34},
+      {label:"Click rate",data:email.map(e=>e.clickR!==null?Number(e.clickR)*100:null),backgroundColor:C.lavender,borderRadius:5,maxBarThickness:34}]},
+    options:{plugins:{legend:{position:"bottom",labels:{boxWidth:10,boxHeight:10}}},scales:{y:{grid:{color:C.grid},ticks:{callback:v=>v+"%"}},x:{grid:{display:false}}},maintainAspectRatio:false}
+  });
+  let eth = "<tr><th>Date</th><th>Send</th><th class='num'>Sent</th><th class='num'>Delivered %</th><th class='num'>Open %</th><th class='num'>Click %</th></tr>";
+  let erows = email.slice().reverse().map(e=>
+    `<tr><td>${dLabel(e.date)}</td><td>${e.name??""}</td><td class="num">${e.sent??""}</td><td class="num">${e.deliv!==null&&e.deliv!==""?pctS(e.deliv):""}</td><td class="num">${e.openR!==null&&e.openR!==""?pctS(e.openR):""}</td><td class="num">${e.clickR!==null&&e.clickR!==""?pctS(e.clickR):""}</td></tr>`).join("");
+  document.getElementById("tbl-email").innerHTML = eth + erows;
+}
+
+// ---- nav ----
+document.querySelectorAll(".nav button").forEach(b=>{
+  b.addEventListener("click",()=>{
+    document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active");
+    document.querySelectorAll(".page").forEach(p=>{p.classList.remove("active");p.style.display="none";});
+    const pg = document.getElementById("page-"+b.dataset.page);
+    pg.classList.add("active"); pg.style.display="block";
+  });
+});
+
+// ---- boot ----
+(async function(){
+  try{
+    const [cohT, dayT, emT] = await Promise.all([gviz("Cohorts"), gviz("Daily"), gviz("Email Stats (manual)")]);
+    document.getElementById("load").style.display="none";
+    document.getElementById("page-overview").style.display="block";
+    render(parseCohorts(cohT), parseDaily(dayT), parseEmail(emT));
+  }catch(e){
+    document.getElementById("load").style.display="none";
+    const f = document.getElementById("fail");
+    f.style.display="block";
+    f.textContent = "Could not load data from the scoreboard sheet: "+e.message+" - check that the sheet is still set to 'anyone with link can view'.";
+  }
+})();
+</script>
+</body>
+</html>
