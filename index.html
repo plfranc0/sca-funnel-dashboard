@@ -446,14 +446,24 @@ function parseCohorts(table){
   }
   return out;
 }
+// The Daily tab is append-only, so a day gets more than one row whenever the snapshot is run by
+// hand on top of its 8am trigger. Roll those into one point per day: running totals come from the
+// last snapshot of the day, deltas are summed so a manual re-run cannot hide the day's movement.
 function parseDaily(table){
-  const out = [];
+  const byDay = {};
   for(const row of table.rows){
     const d = asDate(val(row,0));
     if(!(d instanceof Date)) continue;
-    out.push({date:d, size:val(row,1), apps:val(row,2), appsD:val(row,3), booked:val(row,4), bookedD:val(row,5),
-      stages:[val(row,6),val(row,7),val(row,8),val(row,9),val(row,10),val(row,11),val(row,12)]});
+    const key = dayKey(d);
+    const appsD = Number(val(row,3)) || 0, bookedD = Number(val(row,5)) || 0;
+    const prior = byDay[key];
+    byDay[key] = {date:d, size:val(row,1), apps:val(row,2), booked:val(row,4),
+      appsD:   (prior ? prior.appsD   : 0) + appsD,
+      bookedD: (prior ? prior.bookedD : 0) + bookedD,
+      stages:[val(row,6),val(row,7),val(row,8),val(row,9),val(row,10),val(row,11),val(row,12)],
+      snapshots:(prior ? prior.snapshots : 0) + 1};
   }
+  const out = Object.values(byDay);
   out.sort((a,b)=>a.date-b.date);
   return out;
 }
