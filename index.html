@@ -73,6 +73,37 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .kpi .sub{font-size:11px;color:var(--muted)}
 .kpi .sub.good{color:var(--teal);font-weight:600}.kpi .sub.bad{color:var(--red);font-weight:600}
 
+/* ---- command center v2: Thu-to-Thu week view ---- */
+.cc-banner{background:#FBEAE9;border:1px solid #EFC4C1;border-radius:var(--r);padding:12px 16px;color:var(--red);font-size:12.5px;margin-bottom:14px}
+.cc-banner b{font-weight:700}
+.cc-week{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.wk-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--card);color:var(--wine);font-size:12px;cursor:pointer;flex:none}
+.wk-btn:hover{background:#F7EFEA}
+.wk-btn:disabled{opacity:.3;cursor:default}
+.wk-main{font-family:var(--serif);font-size:20px;font-weight:600;color:var(--wine2);letter-spacing:-0.2px}
+.wk-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.wk-chip{margin-left:auto;font-size:10px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;padding:5px 13px;border-radius:20px;flex:none}
+.wk-chip.final{background:#E4F1F0;color:#0E6B6C}
+.wk-chip.open{background:#F7EDD9;color:var(--gold)}
+.band{display:flex;align-items:baseline;justify-content:space-between;margin:20px 0 10px;border-bottom:1px solid var(--border);padding-bottom:6px}
+.band .bt{font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--wine2);font-weight:800}
+.band .owner{font-size:10.5px;color:var(--muted)}
+.t-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.t-row.big3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:880px){.t-row{grid-template-columns:repeat(2,1fr)}}
+.t{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:13px 15px;box-shadow:0 1px 2px rgba(122,20,32,0.04);border-left:3px solid transparent;min-width:0}
+.t.good{border-left-color:var(--teal)}
+.t.warn{border-left-color:var(--gold)}
+.t.bad{border-left-color:var(--red)}
+.t-top{display:flex;align-items:center;justify-content:space-between;gap:6px;min-height:18px}
+.t .lbl{font-size:9.5px;letter-spacing:1.1px;text-transform:uppercase;color:var(--muted);font-weight:700}
+.t .val{font-family:var(--serif);font-size:25px;font-weight:600;margin:5px 0 2px;letter-spacing:-0.5px}
+.big3 .t .val{font-size:31px}
+.t .sub{font-size:10.5px;color:var(--muted);line-height:1.5;white-space:normal}
+.t .sub .up{color:var(--teal);font-weight:700}
+.t .sub .dn{color:var(--red);font-weight:700}
+.spk{flex:none;opacity:.85}
+
 .sec-label{font-family:var(--serif);font-size:16px;font-weight:600;color:var(--wine2);margin:26px 0 12px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
 @media(max-width:880px){.grid2{grid-template-columns:1fr}}
@@ -136,7 +167,7 @@ td.name{font-weight:600}
   <button data-page="settings">Settings</button>
 </div>
 
-<div class="toolbar" id="toolbar">
+<div class="toolbar" id="toolbar" style="display:none">
   <label>From</label><input type="date" id="f-from">
   <label>To</label><input type="date" id="f-to">
   <div class="presets">
@@ -157,31 +188,34 @@ td.name{font-weight:600}
 
   <!-- ============ COMMAND CENTER ============ -->
   <div class="page active" id="page-cc" style="display:none">
-    <div class="range-note" id="cc-range"></div>
+    <div class="cc-banner" id="cc-stale" style="display:none"></div>
+    <div class="cc-week">
+      <button class="wk-btn" id="cc-prev" title="Earlier week">&#9664;</button>
+      <div>
+        <div class="wk-main" id="cc-wk-main">&mdash;</div>
+        <div class="wk-sub" id="cc-wk-sub"></div>
+      </div>
+      <button class="wk-btn" id="cc-next" title="Later week">&#9654;</button>
+      <div class="wk-chip final" id="cc-wk-chip"></div>
+    </div>
     <div class="cc-grid">
       <div>
-        <div class="kpis" id="cc-kpis"></div>
-        <div class="card">
+        <div class="t-row big3" id="cc-verdict"></div>
+        <div class="band"><span class="bt">Webinar</span><span class="owner">funnel scoreboard</span></div>
+        <div class="t-row" id="cc-webinar"></div>
+        <div class="band"><span class="bt">Sales Calls</span><span class="owner">closer EOC reports</span></div>
+        <div class="t-row" id="cc-sales"></div>
+        <div class="band"><span class="bt">Setters</span><span class="owner">SDR EOD + Speed to Dial</span></div>
+        <div class="t-row" id="cc-setters"></div>
+        <div class="card" style="margin-top:20px">
           <h3>Full Funnel</h3>
           <div class="hint" id="funnel-hint"></div>
           <div class="chart-box tall"><canvas id="ch-funnel"></canvas></div>
-          <div class="legend">Registered through Booked come from the Funnel Scoreboard. Call Shows and Closes come from the closer EOC reports for the same webinar week.</div>
-        </div>
-        <div class="grid2" style="margin-top:16px">
-          <div class="card">
-            <h3>Cash by Webinar Week</h3>
-            <div class="hint">From the EOC reports &middot; Whop override shown when entered</div>
-            <div class="chart-box"><canvas id="ch-cashwk"></canvas></div>
-          </div>
-          <div class="card">
-            <h3>Show Rate by Week</h3>
-            <div class="hint">Webinar show % &middot; goal <span id="g-showweb"></span></div>
-            <div class="chart-box"><canvas id="ch-show"></canvas></div>
-          </div>
+          <div class="legend">Registered through Booked from the Funnel Scoreboard. Call Shows and Closes from the closer EOC reports for this Thursday-to-Thursday week.</div>
         </div>
       </div>
       <div class="rail">
-        <h4>Watchlist <span class="rail-count" id="rail-count">0</span></h4>
+        <h4>Monday Agenda <span class="rail-count" id="rail-count">0</span></h4>
         <div id="rail-body"></div>
       </div>
     </div>
@@ -285,6 +319,7 @@ td.name{font-weight:600}
         <div class="field"><label>Call show goal %</label><input type="number" id="s-showCall"><div class="fh">Booked calls that show</div></div>
         <div class="field"><label>Close rate goal %</label><input type="number" id="s-close"><div class="fh">Closes over shows</div></div>
         <div class="field"><label>Dial goal / day</label><input type="number" id="s-dials"></div>
+        <div class="field"><label>Speed-to-dial target (min)</label><input type="number" id="s-stdMin"><div class="fh">Booking to first human dial</div></div>
         <div class="field"><label>Weekly cash goal $</label><input type="number" id="s-cashWk"></div>
         <div class="field"><label>RPR goal $</label><input type="number" id="s-rpr"><div class="fh">Cash per registrant</div></div>
         <div class="field"><label>Closer commission %</label><input type="number" id="s-ccPct"></div>
@@ -310,6 +345,7 @@ td.name{font-weight:600}
         <tr><td class="name">Show %, No-Show, Reached %, App Rate</td><td>Funnel Scoreboard &rarr; Cohorts</td><td>Sheet formulas (cannot drift)</td></tr>
         <tr><td class="name">Cash, Call Shows, Closes, Close Rate, AOV</td><td>Gigi Master Doc &rarr; eoc</td><td>Closers, after every call</td></tr>
         <tr><td class="name">Dials, Quality Convos, Sets</td><td>Gigi Master Doc &rarr; SDR EOD FORM</td><td>Setters, end of day</td></tr>
+        <tr><td class="name">Speed to Lead (mins to first human dial)</td><td>Funnel Scoreboard &rarr; Speed to Dial</td><td>Apps Script, daily 7am (GHL Conversations API)</td></tr>
         <tr><td class="name">Open %, Click %</td><td>Funnel Scoreboard &rarr; Email Stats</td><td>By hand from the GHL UI</td></tr>
       </table></div>
     </div>
@@ -323,7 +359,7 @@ td.name{font-weight:600}
 
 <script>
 // ---------- settings ----------
-const DEF = {showWeb:33, showCall:85, close:30, dials:200, cashWk:30000, rpr:83, ccPct:10, scPct:5,
+const DEF = {showWeb:33, showCall:85, close:30, dials:200, cashWk:30000, rpr:83, ccPct:10, scPct:5, stdMin:20,
   sidFunnel:"1_UWmgZb_Cr3ST2WKizkaIh8zQrvFSjvevIaESeiMKKI", sidSales:"1slHyhPeWvGge876w9xC1oQ8Ml1ZO2FD1vlxVJcrx47s"};
 const SKEY = "sca_hq_settings_v1";
 let S = (()=>{ try{ return Object.assign({}, DEF, JSON.parse(localStorage.getItem(SKEY)||"{}")); }catch(e){ return Object.assign({},DEF); } })();
@@ -509,6 +545,21 @@ function parseEOC(table){
   out.sort((a,b)=>a.date-b.date);
   return out;
 }
+// Speed to Dial tab: rows 1-7 summary block, row 8 headers, data from row 9.
+// Cols: 0 apptId · 1 calendar · 2 lead · 3 booked · 4 call time · 5 first dial · 6 setter · 7 mins to dial · 8 lead-time hrs · 9 status
+// Summary/header rows have no date in col 3, so they fall out of the date guard on their own.
+function parseSTD(table){
+  const out = [];
+  if(!table) return out;
+  for(const row of table.rows){
+    const booked = asDate(val(row,3));
+    if(!(booked instanceof Date)) continue;
+    const mins = parseNum(val(row,7));
+    out.push({booked, mins, setter:titleCase(val(row,6)), status:String(val(row,9)||"").toLowerCase()});
+  }
+  out.sort((a,b)=>a.booked-b.booked);
+  return out;
+}
 function parseSDR(table){
   const out = [];
   for(const row of table.rows){
@@ -559,6 +610,178 @@ function pill(p, hi, mid){
 function sum(arr, f){ return arr.reduce((a,x)=>a+(f(x)||0),0); }
 function esc(s){ return String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 
+// ---------- command center (Thu-to-Thu week view) ----------
+// The CC ignores the toolbar filters entirely. Its only time control is the week
+// stepper: one webinar cohort at a time, defaulting to the most recent.
+let ccIdx = null;
+
+function tile(lbl, v, sub, cls, spk){
+  return `<div class="t ${cls||""}"><div class="t-top"><span class="lbl">${lbl}</span>${spk||""}</div><div class="val">${v}</div><div class="sub">${sub||""}</div></div>`;
+}
+// 4-6 point inline trend. Deliberately unlabeled — direction at a glance, charts live on the other tabs.
+function spark(vals){
+  const v = vals.filter(x=>x!==null&&x!==undefined&&x!==""&&!isNaN(x)).map(Number);
+  if(v.length<2) return "";
+  const w=54,h=18,min=Math.min(...v),max=Math.max(...v),rng=(max-min)||1;
+  const y=x=>(h-2-((x-min)/rng)*(h-4)).toFixed(1);
+  const pts=v.map((x,i)=>((i/(v.length-1))*(w-4)).toFixed(1)+","+y(x)).join(" ");
+  return `<svg class="spk" width="${w}" height="${h}"><polyline points="${pts}" fill="none" stroke="#C7BBAC" stroke-width="1.5"/><circle cx="${w-4}" cy="${y(v[v.length-1])}" r="2.2" fill="#7A1420"/></svg>`;
+}
+function dTxt(cur, pr, f){
+  if(cur===null||cur===undefined||pr===null||pr===undefined||cur===""||pr==="") return "";
+  cur=Number(cur); pr=Number(pr);
+  if(isNaN(cur)||isNaN(pr)) return "";
+  const d=cur-pr, up=d>=0, ff=f||(n=>Math.abs(n).toLocaleString());
+  return `<span class="${up?"up":"dn"}">${up?"&#9650;":"&#9660;"} ${ff(d)}</span> vs prior wk`;
+}
+const st3 = (v, good, warn) => (v===null||v===undefined||isNaN(v)) ? "" : (v>=good ? "good" : (v>=warn ? "warn" : "bad"));
+
+function renderCC(cohorts, eocAll, sdrAll, stdAll){
+  const el = id => document.getElementById(id);
+  const agenda = [];
+
+  if(!cohorts.length){
+    el("cc-wk-main").textContent = "No webinar weeks yet";
+    ["cc-verdict","cc-webinar","cc-sales","cc-setters"].forEach(id=>el(id).innerHTML="");
+    el("rail-body").innerHTML = `<div class="watch"><span class="wd warn"></span><span>The Cohorts tab is empty — nothing to recap.</span></div>`;
+    return;
+  }
+  if(ccIdx===null || ccIdx>cohorts.length-1 || ccIdx<0) ccIdx = cohorts.length-1;
+  const c = cohorts[ccIdx], prevC = ccIdx>0 ? cohorts[ccIdx-1] : null;
+  const wkStart = c.date, wkEnd = new Date(c.date.getTime()+7*86400000);
+  const open = Date.now() < wkEnd.getTime();
+
+  // ---- header + stepper ----
+  el("cc-wk-main").innerHTML = "Thu "+dLabel(wkStart)+" &rarr; Thu "+dLabel(wkEnd);
+  el("cc-wk-sub").textContent = "Masterclass "+wkStart.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})
+    + (prevC ? " · compared to the "+dLabel(prevC.date)+" week" : "");
+  const chip = el("cc-wk-chip");
+  chip.className = "wk-chip "+(open?"open":"final");
+  chip.textContent = open ? "in progress — calls run thru Wed "+dLabel(new Date(wkEnd.getTime()-86400000)) : "final";
+  el("cc-prev").disabled = ccIdx<=0;
+  el("cc-next").disabled = ccIdx>=cohorts.length-1;
+
+  // ---- staleness alarm: a scoreboard that silently stops updating is worse than none ----
+  const latest = cohorts[cohorts.length-1];
+  const ageD = Math.floor((Date.now()-latest.date.getTime())/86400000);
+  const ban = el("cc-stale");
+  if(ageD > 8){
+    ban.style.display = "block";
+    ban.innerHTML = `<b>No webinar row since ${dLabel(latest.date)}</b> (${ageD} days). The Thursday sheet feed is likely broken — everything below may be stale. Fix the Apps Script triggers before trusting this page.`;
+    agenda.push(["bad",`Sheet feed is stale — no webinar row in <b>${ageD} days</b>. Fix the triggers first.`]);
+  } else ban.style.display = "none";
+
+  // ---- week slices (unfiltered sources — the CC has its own clock) ----
+  const inWk = (rows, key) => rows.filter(r => r[key] >= wkStart && r[key] < wkEnd);
+  const eoc = inWk(eocAll, "date"), sdr = inWk(sdrAll, "date"), std = inWk(stdAll, "booked");
+  const stat = rows => ({ n:rows.length, shows:rows.filter(r=>r.show).length, closes:rows.filter(r=>r.closed).length,
+    cash:sum(rows,r=>r.cash), rev:sum(rows,r=>r.rev), cxlUs:rows.filter(r=>r.cxlUs).length, cxlLead:rows.filter(r=>r.cxlLead).length });
+  const s = stat(eoc);
+  const wkCashOf = co => { // cash for any cohort, for deltas and sparklines
+    if(co.cashWhop!=null) return co.cashWhop;
+    const end = new Date(co.date.getTime()+7*86400000);
+    return sum(eocAll.filter(r=>r.date>=co.date && r.date<end), r=>r.cash);
+  };
+  const hist = f => cohorts.slice(Math.max(0,ccIdx-5), ccIdx+1).map(f); // up to 6 weeks incl. selected
+
+  // ---- verdict row ----
+  const cash = wkCashOf(c);
+  const cashSrc = c.cashWhop!=null ? "Whop override" : "EOC reports";
+  const prevCash = prevC ? wkCashOf(prevC) : null;
+  const cashPct = cash!=null ? cash/S.cashWk : null;
+  let v = "";
+  v += tile("Cash Collected", money(cash), cashSrc+" · goal "+money(S.cashWk)+"<br>"+dTxt(cash, prevCash, n=>money(Math.abs(n))),
+    st3(cashPct, 1, 0.8), spark(hist(wkCashOf)));
+  v += tile("Revenue Generated", money(s.rev), "contracted value · "+s.closes+" close"+(s.closes===1?"":"s"), "");
+  const cc = s.rev ? cash/s.rev : null;
+  v += tile("Cash / Contracted", cc!=null?pctS(cc):"&mdash;", "collected up front · healthy &ge;60%", cc!=null?st3(cc,0.6,0.45):"");
+  el("cc-verdict").innerHTML = v;
+  if(cashPct!=null && cashPct<1) agenda.push([cashPct<0.8?"bad":"warn",`Cash <b>${money(cash)}</b> vs the ${money(S.cashWk)} weekly goal.`]);
+  if(cc!=null && cc<0.45) agenda.push(["warn",`Only <b>${pctS(cc)}</b> of contracted revenue collected — payment plans piling up.`]);
+
+  // ---- webinar ----
+  const bookRate = (c.booked!=null && Number(c.apps)) ? Number(c.booked)/Number(c.apps) : null;
+  const prevBookRate = (prevC && prevC.booked!=null && Number(prevC.apps)) ? Number(prevC.booked)/Number(prevC.apps) : null;
+  let w = "";
+  w += tile("Registrants", c.reg??"&mdash;", dTxt(c.reg, prevC?prevC.reg:null), Number(c.reg)<300?"warn":"", spark(hist(x=>x.reg)));
+  w += tile("Show Rate", pctS(c.show), (c.att??"?")+" live · goal "+S.showWeb+"%<br>"+dTxt(c.show, prevC?prevC.show:null, n=>Math.abs(n*100).toFixed(1)+" pts"),
+    st3(c.show, S.showWeb/100, (S.showWeb-3)/100), spark(hist(x=>x.show!=null?x.show*100:null)));
+  w += tile("Applications", c.apps??"&mdash;", (c.appRate!=null?pctS(c.appRate)+" of attendees · ":"")+dTxt(c.apps, prevC?prevC.apps:null), "", spark(hist(x=>x.apps)));
+  w += tile("Calls Booked", c.booked??"&mdash;", (bookRate!=null?pctS(bookRate)+" of apps · ":"")+dTxt(c.booked, prevC?prevC.booked:null), "", spark(hist(x=>x.booked)));
+  el("cc-webinar").innerHTML = w;
+  if(Number(c.reg)<300) agenda.push(["warn",`Registrations <b>${c.reg}</b> — under the 300 floor.`]);
+  if(c.show!=null && c.show < (S.showWeb-3)/100) agenda.push(["bad",`Webinar show rate <b>${pctS(c.show)}</b>, goal ${S.showWeb}%.`]);
+  if(String(c.verified||"").toUpperCase()==="PROXY") agenda.push(["warn",`Attendance for ${dLabel(c.date)} is still the click <b>proxy</b> — enter the YouTube Studio count.`]);
+
+  // ---- sales calls ----
+  const showR = s.n ? s.shows/s.n : null;
+  const closeR = s.shows ? s.closes/s.shows : null;
+  const cxl = s.cxlUs + s.cxlLead;
+  const cxlR = s.n ? cxl/s.n : null;
+  let sc = "";
+  if(s.n){
+    sc += tile("Call Show Rate", pctS(showR), s.shows+" of "+s.n+" · goal "+S.showCall+"%", st3(showR, S.showCall/100, S.showCall/100*0.85));
+    sc += tile("Cancel Rate", pctS(cxlR), cxl+" cancel"+(cxl===1?"":"s")+" · "+s.cxlUs+" us / "+s.cxlLead+" lead", cxlR>0.25?"bad":(cxlR>0.15?"warn":""));
+    sc += tile("Close Rate", closeR!=null?pctS(closeR):"&mdash;", s.closes+" close"+(s.closes===1?"":"s")+" of "+s.shows+" shows · goal "+S.close+"%", st3(closeR, S.close/100, S.close/100*0.66));
+    sc += tile("AOV", s.closes?money(s.rev/s.closes):"&mdash;", "revenue / close", "");
+    if(showR!=null && s.n>=5 && showR < S.showCall/100*0.85) agenda.push(["bad",`Call show rate <b>${pctS(showR)}</b>, goal ${S.showCall}%.`]);
+    if(closeR!=null && s.shows>=5 && closeR < S.close/100*0.66) agenda.push(["bad",`Close rate <b>${pctS(closeR)}</b>, goal ${S.close}%.`]);
+    if(cxlR!=null && cxlR>0.25) agenda.push(["warn",`Cancel rate <b>${pctS(cxlR)}</b> — dig into why on the call list.`]);
+    const noSet = eoc.filter(r=>!r.setter).length;
+    if(noSet>2) agenda.push(["warn",`<b>${noSet}</b> calls this week have no setter named — setter board is undercounting.`]);
+  } else {
+    sc = tile("No calls "+(open?"yet":"")+" this week","&mdash;", open?"EOC reports land as calls happen":"no EOC rows in this window","");
+  }
+  el("cc-sales").innerHTML = sc;
+
+  // ---- setters ----
+  const fMin = m => m==null ? "&mdash;" : (m>=120 ? (m/60).toFixed(m>=600?0:1).replace(/\.0$/,"")+"h" : Math.round(m)+"m");
+  const dialed = std.filter(r=>r.mins!=null);
+  const hitTgt = dialed.filter(r=>r.mins<=S.stdMin).length;
+  const stdPct = std.length ? hitTgt/std.length : null;
+  const avgMin = dialed.length ? Math.round(sum(dialed,r=>r.mins)/dialed.length) : null;
+  const never = std.length - dialed.length;
+  const dials = sum(sdr, r=>r.dials), convos = sum(sdr, r=>r.convosQ), sets = sum(sdr, r=>r.sets);
+  const days = new Set(sdr.map(r=>dayKey(r.date))).size;
+  let st = "";
+  if(stdAll.length){
+    st += tile("Speed to Lead", std.length?pctS(stdPct):"&mdash;",
+      std.length ? `dialed &le;${S.stdMin}m of booking · avg <b>${fMin(avgMin)}</b>`+(never?` · ${never} never dialed`:"") : "no bookings this week",
+      std.length?st3(stdPct,0.8,0.6):"");
+    if(std.length && stdPct<0.6) agenda.push(["bad",`Only <b>${pctS(stdPct)}</b> of bookings dialed within ${S.stdMin} min (avg ${fMin(avgMin)}).`]);
+    if(never>3) agenda.push(["warn",`<b>${never}</b> bookings this week were never dialed by a human.`]);
+  } else {
+    st += tile("Speed to Lead","&mdash;","Speed to Dial tab not readable yet","");
+  }
+  st += tile("Pick-Up Rate", dials?pctS(convos/dials):"&mdash;", dials?convos+" convos / "+dials+" dials (proxy)":"no dials reported", "");
+  st += tile("Dials per Set", (sets&&dials)?(dials/sets).toFixed(0):"&mdash;", (sets||dials)?dials+" dials · "+sets+" sets":"", (sets&&dials&&dials/sets>40)?"warn":"");
+  st += tile("Dials", dials||"&mdash;", days?("avg "+Math.round(dials/days)+"/day over "+days+" reported day"+(days===1?"":"s")+" · goal "+S.dials+"/day"):"", days?st3(dials/days, S.dials, S.dials*0.5):"");
+  el("cc-setters").innerHTML = st;
+  if(days && dials/days < S.dials*0.5) agenda.push(["warn",`Dial pace <b>${Math.round(dials/days)}/day</b>, goal ${S.dials}.`]);
+
+  // ---- funnel chart ----
+  el("funnel-hint").textContent = "Webinar "+dLabel(c.date)+(open?" · sales week still in progress":"");
+  const reached = (Number(c.att)||0)+(Number(c.replay)||0);
+  mkChart("ch-funnel",{
+    type:"bar",
+    data:{labels:["Registered","Reached (live+replay)","Applied","Booked","Call Showed","Closed"],
+      datasets:[{data:[c.reg, reached, c.apps, c.booked, s.shows, s.closes].map(x=>Number(x)||0),
+        backgroundColor:[C.wine,C.blushD,C.sand,C.taupe,C.teal,C.gold],borderRadius:6}]},
+    options:{indexAxis:"y",plugins:{legend:{display:false}},scales:{x:{grid:{color:C.grid}},y:{grid:{display:false}}},maintainAspectRatio:false}
+  });
+
+  // ---- Monday agenda rail ----
+  if(health.length) agenda.push(["warn",`<b>${health.length}</b> data issues — see the Data Health tab.`]);
+  if(open) agenda.push(["ok",`This week is still open — final call numbers land Wed ${dLabel(new Date(wkEnd.getTime()-86400000))}.`]);
+  if(!agenda.filter(a=>a[0]!=="ok").length) agenda.unshift(["ok","Everything tracked is inside its goal. Review wins, then plan the week."]);
+  const order = {bad:0, warn:1, ok:2};
+  agenda.sort((a,b)=>order[a[0]]-order[b[0]]);
+  el("rail-body").innerHTML = agenda.map(a=>`<div class="watch"><span class="wd ${a[0]}"></span><span>${a[1]}</span></div>`).join("");
+  const issues = agenda.filter(a=>a[0]!=="ok").length;
+  const rc = el("rail-count");
+  rc.textContent = issues; rc.className = "rail-count"+(issues?" has":"");
+}
+
 // ---------- render ----------
 function render(){
   killCharts();
@@ -587,17 +810,13 @@ function render(){
   const sdr     = sdrAll.filter(r=>inRange(r.date) && (!F.rep || r.name===F.rep));
 
   const lbl = rangeLabel() + (F.rep ? " · "+F.rep : "");
-  ["cc-range","mkt-range","sales-range"].forEach(id=>{
+  ["mkt-range","sales-range"].forEach(id=>{
     document.getElementById(id).innerHTML = `Showing <b>${esc(lbl)}</b> — ${cohorts.length} webinar week${cohorts.length===1?"":"s"}, ${eoc.length} call${eoc.length===1?"":"s"}.`;
   });
-  document.getElementById("g-showweb").textContent = S.showWeb+"%";
   document.getElementById("g-showcall").textContent = S.showCall+"%";
   document.getElementById("g-close").textContent = S.close+"%";
   document.getElementById("g-dials").textContent = S.dials;
   document.getElementById("g-rpr").textContent = "$"+S.rpr;
-
-  const last = cohorts.length ? cohorts[cohorts.length-1] : null;
-  const prev = cohorts.length>1 ? cohorts[cohorts.length-2] : null;
 
   const eocWk = c => {
     const end = new Date(c.date.getTime() + 7*24*3600*1000);
@@ -606,77 +825,11 @@ function render(){
   const wkStats = rows => ({ n:rows.length, shows:rows.filter(r=>r.show).length, closes:rows.filter(r=>r.closed).length,
     cash:sum(rows,r=>r.cash), rev:sum(rows,r=>r.rev) });
   const wkRows = cohorts.map(c=>({c, s:wkStats(eocWk(c))}));
-  const lw = last ? wkStats(eocWk(last)) : null;
 
-  // ===== watchlist (quiet right rail) =====
-  const watch = [];
-  if(last){
-    const cashWk = (last.cashWhop!=null) ? last.cashWhop : (lw?lw.cash:null);
-    if(Number(last.reg) < 300) watch.push(["warn",`Registrations <b>${last.reg}</b> for ${dLabel(last.date)} — under the 300 floor.`]);
-    if(lw && lw.n >= 5){
-      const sr = lw.shows/lw.n;
-      if(sr < S.showCall/100*0.85) watch.push(["bad",`Call show rate <b>${pctS(sr)}</b> that week, goal ${S.showCall}%.`]);
-    }
-    if(cashWk!=null && cashWk < S.cashWk) watch.push(["warn",`Cash <b>${money(cashWk)}</b> vs the ${money(S.cashWk)} weekly goal.`]);
-    const noSet = eocWk(last).filter(r=>!r.setter).length;
-    if(noSet > 2) watch.push(["warn",`<b>${noSet}</b> calls that week have no setter named.`]);
-  }
-  if(health.length) watch.push(["warn",`<b>${health.length}</b> data issues — see the Data Health tab.`]);
-  if(!watch.length) watch.push(["ok","Everything tracked is inside its goal."]);
-  document.getElementById("rail-body").innerHTML = watch.map(w=>`<div class="watch"><span class="wd ${w[0]}"></span><span>${w[1]}</span></div>`).join("");
-  const rc = document.getElementById("rail-count");
-  const issues = watch.filter(w=>w[0]!=="ok").length;
-  rc.textContent = issues; rc.className = "rail-count"+(issues?" has":"");
-
-  // ===== command center KPIs =====
-  const delta = (cur,pr) => (pr==null||cur==null) ? "" : ((cur-pr>=0?"▲ +":"▼ ")+Math.abs(cur-pr).toLocaleString()+" vs prior wk");
-  const dCls = (cur,pr)=> (pr==null||cur==null)?"":(cur>=pr?"good":"bad");
-  let k = "";
-  if(last){
-    const cashWk = (last.cashWhop!=null) ? last.cashWhop : (lw?lw.cash:null);
-    const cashSrc = (last.cashWhop!=null) ? "Whop override" : "EOC reports";
-    k += kpi("Cash — latest wk", money(cashWk), cashSrc+" · goal "+money(S.cashWk), (cashWk>=S.cashWk)?"good":"");
-    k += kpi("Registered", last.reg??"—", prev?delta(last.reg,prev.reg):"", prev?dCls(last.reg,prev.reg):"");
-    k += kpi("Webinar Show", pctS(last.show), "goal "+S.showWeb+"%", last.show>=S.showWeb/100?"good":(last.show?"bad":""));
-    k += kpi("Applications", last.apps??"—", prev?delta(last.apps,prev.apps):"", prev?dCls(last.apps,prev.apps):"");
-    k += kpi("Calls Booked", last.booked??"—", prev?delta(last.booked,prev.booked):"", prev?dCls(last.booked,prev.booked):"");
-    if(lw && lw.n){
-      k += kpi("Call Show", pctS(lw.shows/lw.n), lw.shows+" of "+lw.n+" · goal "+S.showCall+"%", (lw.shows/lw.n>=S.showCall/100)?"good":"bad");
-      k += kpi("Close Rate", lw.shows?pctS(lw.closes/lw.shows):"—", lw.closes+" closes · goal "+S.close+"%", (lw.shows&&lw.closes/lw.shows>=S.close/100)?"good":"bad");
-    }
-    const rpr = (cashWk!=null && last.reg) ? cashWk/Number(last.reg) : null;
-    k += kpi("RPR", rpr!=null?("$"+rpr.toFixed(0)):"—", "cash / registrant · goal $"+S.rpr, rpr>=S.rpr?"good":"");
-  } else {
-    k = kpi("No webinar weeks","—","in this date range","");
-  }
-  document.getElementById("cc-kpis").innerHTML = k;
-
-  if(last){
-    document.getElementById("funnel-hint").textContent = "Webinar "+dLabel(last.date)+(F.rep?" · "+F.rep:"");
-    const reached = (Number(last.att)||0)+(Number(last.replay)||0);
-    mkChart("ch-funnel",{
-      type:"bar",
-      data:{labels:["Registered","Reached (live+replay)","Applied","Booked","Call Showed","Closed"],
-        datasets:[{data:[last.reg, reached, last.apps, last.booked, lw?lw.shows:null, lw?lw.closes:null].map(x=>Number(x)||0),
-          backgroundColor:[C.wine,C.blushD,C.sand,C.taupe,C.teal,C.gold],borderRadius:6}]},
-      options:{indexAxis:"y",plugins:{legend:{display:false}},scales:{x:{grid:{color:C.grid}},y:{grid:{display:false}}},maintainAspectRatio:false}
-    });
-  }
+  // Command Center runs off the UNFILTERED data — its own week stepper is the only time control there.
+  renderCC(cohortsAll, eocAll, sdrAll, parseSTD(RAW.std));
 
   const labelsW = cohorts.map(c=>dLabel(c.date));
-  mkChart("ch-cashwk",{
-    type:"bar",
-    data:{labels:labelsW,datasets:[
-      {label:"EOC cash",data:wkRows.map(w=>w.s.cash),backgroundColor:C.wine,borderRadius:6,maxBarThickness:40},
-      {label:"Whop override",data:wkRows.map(w=>w.c.cashWhop),backgroundColor:C.blush,borderRadius:6,maxBarThickness:40}]},
-    options:{plugins:{legend:{position:"bottom",labels:{boxWidth:10,boxHeight:10}}},scales:{y:{grid:{color:C.grid},ticks:{callback:v=>"$"+(v/1000)+"k"}},x:{grid:{display:false}}},maintainAspectRatio:false}
-  });
-  mkChart("ch-show",{
-    type:"bar",
-    data:{labels:labelsW,datasets:[{data:cohorts.map(c=>c.show!=null?c.show*100:null),
-      backgroundColor:cohorts.map(c=>c.show>=S.showWeb/100?C.teal:(c.show>=(S.showWeb-3)/100?C.sand:C.red)),borderRadius:6,maxBarThickness:48}]},
-    options:{plugins:{legend:{display:false}},scales:{y:{grid:{color:C.grid},ticks:{callback:v=>v+"%"},suggestedMax:45},x:{grid:{display:false}}},maintainAspectRatio:false}
-  });
 
   // ===== marketing =====
   const cohHead = "<tr><th>Webinar</th><th class='num'>Registered</th><th class='num'>Attended</th><th>Show %</th><th class='num'>No-Show</th><th class='num'>Replay</th><th>Reached</th><th class='num'>Apps</th><th>App Rate</th><th class='num'>Booked</th><th class='num'>Call Shows</th><th class='num'>Closes</th><th class='num'>Cash</th><th class='num'>RPR</th><th>Attendance</th><th></th></tr>";
@@ -804,11 +957,13 @@ async function loadAll(){
   document.getElementById("fail").style.display="none";
   document.getElementById("load").style.display="block";
   try{
-    const [coh, day, em, eoc, sdr] = await Promise.all([
+    const [coh, day, em, eoc, sdr, std] = await Promise.all([
       gviz(S.sidFunnel,"Cohorts"), gviz(S.sidFunnel,"Daily"), gviz(S.sidFunnel,"Email Stats (manual)"),
-      gviz(S.sidSales,"eoc"), gviz(S.sidSales,"SDR EOD FORM")
+      gviz(S.sidSales,"eoc"), gviz(S.sidSales,"SDR EOD FORM"),
+      gviz(S.sidFunnel,"Speed to Dial").catch(e=>null) // tab appears once the 8/3 script runs; degrade quietly, never block the page
     ]);
-    RAW = {coh, day, em, eoc, sdr};
+    RAW = {coh, day, em, eoc, sdr, std};
+    ccIdx = null; // fresh data always lands on the latest webinar week
     document.getElementById("load").style.display="none";
     document.querySelector(".page.active").style.display="block";
     render();
@@ -837,7 +992,8 @@ document.querySelectorAll(".nav button").forEach(b=>{
     document.querySelectorAll(".page").forEach(p=>{p.classList.remove("active");p.style.display="none";});
     const pg = document.getElementById("page-"+b.dataset.page);
     pg.classList.add("active"); pg.style.display="block";
-    document.getElementById("toolbar").style.display = (b.dataset.page==="settings") ? "none" : "flex";
+    // CC has its own week stepper; Settings needs no filters. The From/To toolbar belongs to Marketing/Sales/Health only.
+    document.getElementById("toolbar").style.display = (b.dataset.page==="settings"||b.dataset.page==="cc") ? "none" : "flex";
     charts.forEach(c=>{ try{ c.resize(); }catch(e){} }); // canvases sized while hidden need this
   });
 });
@@ -855,6 +1011,8 @@ document.getElementById("f-from").addEventListener("change",()=>{setPresetActive
 document.getElementById("f-to").addEventListener("change",()=>{setPresetActive(null);applyFilters();});
 document.getElementById("f-rep").addEventListener("change",applyFilters);
 document.getElementById("btn-refresh").addEventListener("click",loadAll);
+document.getElementById("cc-prev").addEventListener("click",()=>{ if(ccIdx!==null && ccIdx>0){ ccIdx--; if(RAW) render(); } });
+document.getElementById("cc-next").addEventListener("click",()=>{ if(ccIdx!==null){ ccIdx++; if(RAW) render(); } });
 document.querySelectorAll(".presets .btn").forEach(b=>{
   b.addEventListener("click",()=>{
     const p = b.dataset.preset, now = new Date();
@@ -871,7 +1029,7 @@ document.querySelectorAll(".presets .btn").forEach(b=>{
 
 // settings
 const SF = [["s-showWeb","showWeb"],["s-showCall","showCall"],["s-close","close"],["s-dials","dials"],
-            ["s-cashWk","cashWk"],["s-rpr","rpr"],["s-ccPct","ccPct"],["s-scPct","scPct"]];
+            ["s-stdMin","stdMin"],["s-cashWk","cashWk"],["s-rpr","rpr"],["s-ccPct","ccPct"],["s-scPct","scPct"]];
 function fillSettings(){
   SF.forEach(([id,k])=>{ document.getElementById(id).value = S[k]; });
   document.getElementById("s-sidFunnel").value = S.sidFunnel;
